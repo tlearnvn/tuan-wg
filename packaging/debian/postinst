@@ -1,0 +1,27 @@
+#!/bin/sh
+# Tuấn WireGuard - postinst
+set -e
+
+case "$1" in
+configure)
+    mkdir -p /etc/tuan-wg
+    chmod 700 /etc/tuan-wg
+    if [ ! -f /etc/tuan-wg/db.json ]; then
+        # Cài mới: thiết lập tự động (không hỏi), in ra địa chỉ web và mật khẩu
+        if [ "${TUAN_WG_SKIP_SETUP:-0}" != "1" ]; then
+            /usr/bin/tuan-wg install --from-package || \
+                echo "Tuấn WireGuard: chạy 'sudo tuan-wg install' để hoàn tất cài đặt."
+        fi
+    else
+        # Nâng cấp: khởi động lại dịch vụ với phiên bản mới
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload >/dev/null 2>&1 || true
+            systemctl enable tuan-wg.service >/dev/null 2>&1 || true
+            systemctl restart tuan-wg.service >/dev/null 2>&1 || true
+        fi
+        echo "Tuấn WireGuard đã được cập nhật lên phiên bản $(/usr/bin/tuan-wg version | head -n1 | awk '{print $NF}')."
+    fi
+    ;;
+esac
+
+exit 0

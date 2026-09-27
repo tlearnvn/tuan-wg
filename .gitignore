@@ -1,0 +1,8 @@
+# Tuấn WireGuard
+/build/
+/dist/
+node_modules/
+*.o
+*.tmp.*
+/tuan-wg-demo/
+.DS_Store

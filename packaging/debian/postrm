@@ -1,0 +1,32 @@
+#!/bin/sh
+# Tuấn WireGuard - postrm
+set -e
+
+case "$1" in
+remove)
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload >/dev/null 2>&1 || true
+    fi
+    echo "Đã gỡ Tuấn WireGuard. WireGuard vẫn chạy với cấu hình hiện tại; dữ liệu giữ tại /etc/tuan-wg."
+    echo "Xóa hoàn toàn: sudo apt purge tuan-wg"
+    ;;
+purge)
+    IFACE=wg0
+    if [ -f /etc/tuan-wg/db.json ]; then
+        I=$(sed -n 's/.*"interface" *: *"\([A-Za-z0-9_=+.-]*\)".*/\1/p' /etc/tuan-wg/db.json | head -n1)
+        [ -n "$I" ] && IFACE="$I"
+    fi
+    if grep -q "Tuấn WireGuard" "/etc/wireguard/$IFACE.conf" 2>/dev/null; then
+        if [ -d /run/systemd/system ]; then
+            systemctl disable --now "wg-quick@$IFACE" >/dev/null 2>&1 || true
+        fi
+        wg-quick down "$IFACE" >/dev/null 2>&1 || true
+        rm -f "/etc/wireguard/$IFACE.conf"
+    fi
+    rm -rf /etc/tuan-wg
+    rm -f /etc/sysctl.d/99-tuan-wg.conf
+    echo "Đã xóa toàn bộ dữ liệu Tuấn WireGuard."
+    ;;
+esac
+
+exit 0

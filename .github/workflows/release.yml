@@ -1,0 +1,88 @@
+# Tuấn WireGuard - tự tăng phiên bản, gắn tag và phát hành khi mã nguồn trên main thay đổi
+#
+# - Nếu VERSION hiện tại CHƯA có tag  -> phát hành đúng phiên bản đó (đã được git hook bump).
+# - Nếu VERSION hiện tại ĐÃ có tag    -> tự tăng theo Conventional Commits, ghi CHANGELOG,
+#                                         commit "chore(release): vX.Y.Z [skip ci]" rồi phát hành.
+# Kết quả: GitHub Release kèm tuan-wg_X.Y.Z_amd64.deb, tuan-wg-X.Y.Z-linux-amd64.tar.gz
+#          và bản tên cố định (tuan-wg_amd64.deb...) dùng cho scripts/install.sh.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "web/**"
+      - "tools/**"
+      - "packaging/**"
+      - "Makefile"
+      - "VERSION"
+      - "scripts/install.sh"
+  workflow_dispatch:
+    inputs:
+      level:
+        description: "Mức tăng phiên bản (auto / patch / minor / major)"
+        default: auto
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Phát hành
+    runs-on: ubuntu-24.04
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cài công cụ
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq musl-tools
+
+      - name: Kiểm thử đơn vị
+        run: make test
+
+      - name: Xác định / tăng phiên bản
+        id: ver
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          V="$(cat VERSION)"
+          if git rev-parse -q --verify "refs/tags/v$V" >/dev/null; then
+            echo "v$V đã phát hành - tự tăng phiên bản"
+            scripts/bump-version.sh "${{ github.event.inputs.level || 'auto' }}" --commit
+            git push origin HEAD:${{ github.ref_name }}
+          fi
+          V="$(cat VERSION)"
+          git tag -a "v$V" -m "Tuấn WireGuard v$V"
+          git push origin "v$V"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+      - name: Build & đóng gói
+        run: make deb dist BUILD="$(git rev-parse --short HEAD)"
+
+      - name: Tạo GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="${{ steps.ver.outputs.version }}"
+          awk -v v="$V" 'index($0, "## [" v "]") == 1 {f=1; next} /^## \[/ {if (f) exit} f' CHANGELOG.md > notes.md
+          {
+            echo
+            echo "### Cài đặt nhanh"
+            echo '```bash'
+            echo "curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/scripts/install.sh | sudo bash"
+            echo '```'
+          } >> notes.md
+          cp "dist/tuan-wg_${V}_amd64.deb" dist/tuan-wg_amd64.deb
+          cp "dist/tuan-wg-${V}-linux-amd64.tar.gz" dist/tuan-wg-linux-amd64.tar.gz
+          (cd dist && sha256sum ./*.deb ./*.tar.gz > SHA256SUMS)
+          gh release create "v$V" dist/* --title "Tuấn WireGuard v$V" --notes-file notes.md

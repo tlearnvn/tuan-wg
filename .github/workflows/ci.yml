@@ -1,0 +1,58 @@
+# Tuấn WireGuard - kiểm thử tự động cho mọi push / pull request
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build & kiểm thử
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cài công cụ
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq musl-tools zbar-tools unzip jq wireguard-tools iproute2 iptables
+
+      - name: Build (gcc)
+        run: make -j"$(nproc)"
+
+      - name: Kiểm thử đơn vị (ASan + UBSan)
+        run: make test
+
+      - name: Kiểm thử REST API
+        run: tests/api_test.sh build/tuan-wg
+
+      - name: Fuzz HTTP parser
+        run: |
+          mkdir -p /tmp/fz
+          TUAN_WG_PASSWORD=fuzz-pass-123 ./build/tuan-wg --data-dir /tmp/fz --wg-dir /tmp/fz/wg --no-wg serve --listen 127.0.0.1 --port 18400 &
+          sleep 1
+          python3 tests/http_fuzz.py 127.0.0.1 18400 3000
+
+      - name: Build tĩnh (musl) + đóng gói .deb / .tar.gz
+        run: make deb dist BUILD="$(git rev-parse --short HEAD)"
+
+      - name: Kiểm thử đầu-cuối với WireGuard thật
+        run: sudo tests/e2e_wireguard.sh build/static/tuan-wg
+
+      - name: Kiểm thử giao diện (Chromium)
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+          ./build/tuan-wg serve --demo --listen 127.0.0.1 --port 18080 &
+          sleep 2
+          node scripts/screenshots.cjs http://127.0.0.1:18080 /tmp/shots
+
+      - name: Lưu gói cài đặt
+        uses: actions/upload-artifact@v4
+        with:
+          name: tuan-wg-${{ github.sha }}
+          path: dist/*
+          retention-days: 14

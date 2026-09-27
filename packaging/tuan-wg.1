@@ -1,0 +1,90 @@
+.TH TUAN-WG 1 "2026" "Tuấn WireGuard" "Hướng dẫn sử dụng"
+.SH TÊN
+tuan-wg \- giao diện web quản lý máy chủ WireGuard (Tuấn WireGuard)
+.SH CÚ PHÁP
+.B tuan-wg
+.I lệnh
+.RI [ tùy-chọn ]
+.SH MÔ TẢ
+.B Tuấn WireGuard
+là giao diện web tiếng Việt để cài đặt và quản lý máy chủ VPN WireGuard:
+quản lý người dùng, mã QR, file cấu hình, link chia sẻ, thống kê dung lượng,
+giới hạn thời hạn/dung lượng, xác thực 2 lớp và sao lưu.
+.SH LỆNH
+.TP
+.B install \fR[\-y] [\-\-endpoint HOST] [\-\-port N] [\-\-web\-port N] [\-\-subnet CIDR] [\-\-dns LIST] [\-\-user TÊN] [\-\-password MK]
+Cài WireGuard, bật chuyển tiếp IP, mở tường lửa và tạo dịch vụ systemd tự khởi động.
+.TP
+.B uninstall \fR[\-\-purge]
+Gỡ dịch vụ. \-\-purge: dừng WireGuard và xóa toàn bộ dữ liệu.
+.TP
+.B serve \fR[\-\-listen IP] [\-\-port N]
+Chạy máy chủ web (dịch vụ systemd gọi lệnh này).
+.TP
+.B status
+Xem trạng thái dịch vụ, WireGuard và số người dùng.
+.TP
+.B service \fRinstall|remove|start|stop|restart|status|logs [\-f]
+Quản lý dịch vụ systemd tuan-wg.
+.TP
+.B client list
+Danh sách người dùng.
+.TP
+.B client add \fITÊN\fR [\-\-note TEXT] [\-\-expire NGÀY] [\-\-limit GB] [\-\-monthly] [\-\-dns LIST] [\-\-allowed\-ips LIST] [\-\-qr]
+Thêm người dùng mới.
+.TP
+.B client show \fITÊN|ID|IP\fR [\-\-qr]
+Xem thông tin và cấu hình; \-\-qr in mã QR ra terminal.
+.TP
+.B client config \fITÊN\fR
+In cấu hình thô (dùng để chuyển hướng ra file .conf).
+.TP
+.B client enable|disable|del \fITÊN\fR
+Bật, tắt hoặc xóa người dùng.
+.TP
+.B passwd \fR[MẬT_KHẨU | \-\-random]
+Đặt lại mật khẩu quản trị.
+.TP
+.B reset\-2fa
+Tắt xác thực 2 lớp (khi mất điện thoại).
+.TP
+.B backup \fR[FILE]
+Sao lưu dữ liệu ra file JSON (mặc định ra màn hình).
+.TP
+.B restore \fIFILE\fR
+Khôi phục từ file sao lưu.
+.TP
+.B version
+In phiên bản.
+.SH TÙY CHỌN CHUNG
+.TP
+.B \-\-data\-dir \fIDIR\fR
+Thư mục dữ liệu (mặc định /etc/tuan-wg, hoặc biến môi trường TUAN_WG_DIR).
+.TP
+.B \-\-wg\-dir \fIDIR\fR
+Thư mục cấu hình WireGuard (mặc định /etc/wireguard).
+.TP
+.B \-\-demo
+Chế độ trình diễn với dữ liệu mẫu, không thay đổi WireGuard thật.
+.SH TỆP
+.TP
+.I /etc/tuan-wg/db.json
+Cài đặt, người dùng và khóa (quyền 0600).
+.TP
+.I /etc/tuan-wg/stats.json
+Thống kê dung lượng.
+.TP
+.I /etc/tuan-wg/audit.log
+Nhật ký hoạt động.
+.TP
+.I /etc/wireguard/wg0.conf
+Cấu hình WireGuard được sinh tự động.
+.SH VÍ DỤ
+.nf
+sudo tuan-wg install
+sudo tuan-wg client add "iPhone của Mai" \-\-expire 30 \-\-limit 50 \-\-monthly \-\-qr
+sudo tuan-wg passwd \-\-random
+sudo tuan-wg service logs \-f
+.fi
+.SH TÁC GIẢ
+Tuandethuong \- https://github.com/tlearnvn/tuan-wg

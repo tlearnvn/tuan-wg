@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Tuấn WireGuard - tự tăng phiên bản + ghi CHANGELOG sau mỗi commit có thay đổi mã nguồn.
+# Bật hook:  scripts/setup-hooks.sh   (hoặc: git config core.hooksPath .githooks)
+# Tạm tắt:   TWG_SKIP_BUMP=1 git commit ...
+[ -n "${TWG_SKIP_BUMP:-}" ] && exit 0
+[ -n "${TWG_BUMPING:-}" ] && exit 0
+
+GITDIR="$(git rev-parse --git-dir)"
+# không chạy khi đang rebase / merge / cherry-pick / revert
+for f in rebase-merge rebase-apply MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD; do
+  [ -e "$GITDIR/$f" ] && exit 0
+done
+
+CHANGED="$(git diff-tree --no-commit-id --name-only -r --root HEAD)"
+# commit đã tự cập nhật VERSION (bump thủ công hoặc đã amend) -> bỏ qua
+printf '%s\n' "$CHANGED" | grep -qx 'VERSION' && exit 0
+# chỉ tăng phiên bản khi mã nguồn / giao diện / đóng gói thay đổi
+printf '%s\n' "$CHANGED" | grep -qE '^(src/|web/|tools/|packaging/|Makefile$|scripts/install\.sh$)' || exit 0
+
+SUBJ="$(git log -1 --format=%s)"
+case "$SUBJ" in "chore(release)"*) exit 0 ;; esac
+
+TOP="$(git rev-parse --show-toplevel)"
+TWG_BUMPING=1 "$TOP/scripts/bump-version.sh" auto --last --amend

@@ -1,0 +1,18 @@
+Package: tuan-wg
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: Tuandethuong <tuandethuong@users.noreply.github.com>
+Installed-Size: @SIZE@
+Depends: wireguard-tools, iptables, iproute2
+Suggests: wireguard-go, ufw
+Section: net
+Priority: optional
+Homepage: https://github.com/tlearnvn/tuan-wg
+Description: Tuấn WireGuard - giao diện web quản lý máy chủ WireGuard
+ Tuấn WireGuard là giao diện web tiếng Việt, viết bằng C, để cài đặt và
+ quản lý máy chủ VPN WireGuard: thêm/sửa/xóa người dùng, xuất file cấu hình
+ và mã QR, link chia sẻ có thời hạn, thống kê dung lượng theo thời gian thực,
+ giới hạn thời hạn và dung lượng, xác thực 2 lớp (TOTP), nhật ký hoạt động,
+ sao lưu/khôi phục. Chạy như dịch vụ systemd, tự khởi động cùng máy chủ.
+ .
+ Tác giả: Tuandethuong
