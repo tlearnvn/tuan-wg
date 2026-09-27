@@ -7,6 +7,11 @@ Phiên bản được **tự động tăng** và mục mới được **tự đ�
 
 ## [Chưa phát hành]
 
+## [1.0.1] - 2026-09-27
+
+### 🐛 Sửa lỗi
+- **cli:** Lệnh dòng lệnh chỉ in cảnh báo/lỗi, căn thẳng hàng lệnh status
+
 ## [1.0.0] - 2026-09-27
 
 ### ✨ Tính năng mới

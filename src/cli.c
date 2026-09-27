@@ -623,7 +623,7 @@ int cmd_status(int argc, char **argv)
     const settings_t *s = &g_db.s;
     printf("%s%s%s v%s  -  tác giả %s\n\n", C_BOLD, TWG_NAME, C_RESET, TWG_VERSION, TWG_AUTHOR);
     const char *web = svc_state("tuan-wg");
-    printf("  Dịch vụ web (tuan-wg):  %s%s%s\n", !strcmp(web, "active") ? C_GREEN : C_YELLOW,
+    printf("  Dịch vụ web (tuan-wg):   %s%s%s\n", !strcmp(web, "active") ? C_GREEN : C_YELLOW,
            !strcmp(web, "active") ? "● đang chạy" : web, C_RESET);
     wg_status_t st;
     char err[256];

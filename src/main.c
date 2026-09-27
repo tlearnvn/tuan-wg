@@ -218,6 +218,9 @@ int main(int argc, char **argv)
     app_set_data_dir(dir_set || g_app.demo ? dir : TWG_DEFAULT_DIR);
 
     const char *cmd = nrest > 0 ? rest[0] : "help";
+    /* các lệnh dòng lệnh chỉ in cảnh báo/lỗi; log INFO dành cho dịch vụ "serve" */
+    if (g_log_level == LOG_INFO && strcmp(cmd, "serve") != 0 && strcmp(cmd, "run") != 0)
+        g_log_level = LOG_WARN;
     int sub_argc = nrest > 0 ? nrest - 1 : 0;
     char **sub_argv = rest + 1;
 
