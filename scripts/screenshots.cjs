@@ -51,6 +51,8 @@ async function login(page) {
 async function shot(page, name, opts = {}) {
   if (ONLY && !ONLY.includes(name)) return;
   await sleep(opts.wait || 900);
+  /* bỏ thông báo nổi (toast) còn sót lại để ảnh gọn gàng */
+  await page.evaluate(() => document.querySelectorAll('.toasts > *').forEach((t) => t.remove()));
   const file = path.join(OUT, name + '.png');
   if (opts.el) {
     await (await page.$(opts.el)).screenshot({ path: file });
@@ -124,14 +126,21 @@ async function checkFit(page, where) {
     await page.waitForSelector('.modal .qr-box img');
     await page.waitForSelector('.modal .conf-box .k');
     await shot(page, 'client-qr');
-    await page.click('.modal .tabs button[data-k=stats]');
-    await shot(page, 'client-stats', { wait: 1200 });
     await page.click('.modal .tabs button[data-k=share]');
     await page.click('.modal .tab-share-create, .modal .btn.primary:has-text("Tạo link")');
     await page.waitForSelector('.modal .share-url input');
     await shot(page, 'client-share');
     await page.click('.modal .tabs button[data-k=guide]');
     await shot(page, 'client-guide');
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.modal', { state: 'detached' });
+
+    /* thống kê + thông tin của một người dùng đã có lưu lượng */
+    await page.click('.client-table tbody tr:has-text("Laptop Tuấn") .user-cell');
+    await page.waitForSelector('.modal .tabs');
+    await page.click('.modal .tabs button[data-k=stats]');
+    await page.waitForSelector('.modal .chart svg path');
+    await shot(page, 'client-stats', { wait: 1500 });
     await page.click('.modal .tabs button[data-k=info]');
     await shot(page, 'client-info');
     await page.keyboard.press('Escape');
@@ -151,6 +160,21 @@ async function checkFit(page, where) {
     await page.waitForSelector('.chart svg path');
     await shot(page, 'stats', { full: true, wait: 1400 });
 
+    /* vài thao tác thường gặp để trang nhật ký có dữ liệu minh họa */
+    await page.evaluate(async () => {
+      const H = { 'X-TWG': '1', 'Content-Type': 'application/json' };
+      await fetch('/api/login', { method: 'POST', headers: H, body: JSON.stringify({ username: 'admin', password: 'sai-mat-khau' }) });
+      const cs = (await (await fetch('/api/clients', { headers: H })).json()).clients;
+      const by = (n) => cs.find((c) => c.name === n) || cs[0];
+      const put = (c, body) => fetch('/api/clients/' + c.id, { method: 'PUT', headers: H, body: JSON.stringify(body) });
+      await fetch('/api/clients/' + by('Laptop Tuấn').id + '/config', { headers: H });
+      await put(by('Máy tính Lan'), { enabled: true });
+      await put(by('Máy tính Lan'), { enabled: false });
+      await fetch('/api/clients/' + by('Khách - Hùng').id + '/reset', { method: 'POST', headers: H });
+      await fetch('/api/settings', { method: 'PUT', headers: H, body: JSON.stringify({ dns: '1.1.1.1, 8.8.8.8' }) });
+      await fetch('/api/export.zip', { headers: H });
+      await fetch('/api/backup', { headers: H });
+    });
     await page.goto(BASE + '/#/nhat-ky');
     await page.waitForSelector('.table tbody tr .log-ic');
     await shot(page, 'logs');
