@@ -144,7 +144,7 @@ export function mount(el, ctx) {
       sysItem('CPU', s.cpu, '#6366f1', [s.cpus + ' nhân • tải ' + s.load1.toFixed(2) + ' / ' + s.load5.toFixed(2) + ' / ' + s.load15.toFixed(2)]),
       sysItem('Bộ nhớ RAM', mem, '#06b6d4', [fmtBytes(s.mem_total - s.mem_avail) + ' / ' + fmtBytes(s.mem_total)]),
       sysItem('Ổ đĩa', disk, '#f59e0b', [fmtBytes(s.disk_total - s.disk_free) + ' / ' + fmtBytes(s.disk_total)])),
-      h('dl', { class: 'kv', style: { marginTop: '18px', gridTemplateColumns: 'auto 1fr auto 1fr' } },
+      h('dl', { class: 'kv kv-4', style: { marginTop: '18px' } },
         h('dt', null, 'Máy chủ'), h('dd', null, s.hostname), h('dt', null, 'Hệ điều hành'), h('dd', null, s.os || '—'),
         h('dt', null, 'Kernel'), h('dd', null, s.kernel), h('dt', null, 'Thời gian chạy'), h('dd', null, fmtDuration(s.uptime))));
   }

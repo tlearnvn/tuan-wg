@@ -237,7 +237,7 @@ export function mount(el, ctx) {
     loadSessions();
 
     add(pane, 
-      h('div', { class: 'dash-grid', style: { marginTop: 0, gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)' } },
+      h('div', { class: 'dash-grid grid-2', style: { marginTop: 0 } },
         h('div', { class: 'card' }, h('div', { class: 'card-h' }, h('h3', null, 'Đổi mật khẩu')),
           h('div', { class: 'card-b col', style: { gap: '14px' } }, field('Mật khẩu hiện tại', cur), h('div', { class: 'field' }, h('label', null, 'Mật khẩu mới'), nw, meter, h('div', { class: 'hint' }, 'Tối thiểu 8 ký tự, nên có chữ hoa, số và ký tự đặc biệt')), field('Nhập lại mật khẩu mới', nw2)),
           h('div', { class: 'card-f' }, pwBtn)),

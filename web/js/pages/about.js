@@ -87,7 +87,7 @@ export function mount(el, ctx) {
           info.build ? h('span', { class: 'badge' }, 'Build ' + info.build) : null,
           h('span', { class: 'badge green' }, icon('heart'), 'Tác giả: ' + info.author),
           h('a', { class: 'badge blue', href: info.repo, target: '_blank', rel: 'noopener' }, icon('github'), 'GitHub')))),
-    h('div', { class: 'dash-grid', style: { gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)' } },
+    h('div', { class: 'dash-grid about-grid' },
       h('div', { class: 'card' }, h('div', { class: 'card-h' }, h('h3', null, 'Tính năng')),
         h('div', { class: 'card-b' }, h('div', { class: 'features', style: { gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' } },
           feats.map(([i, t, d]) => h('div', { class: 'feature' }, h('div', { class: 'ic indigo', style: { width: '36px', height: '36px', borderRadius: '11px', display: 'grid', placeItems: 'center', flex: 'none' } }, icon(i)), h('div', null, h('b', null, t), h('span', null, d))))))),

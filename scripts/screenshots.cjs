@@ -67,6 +67,32 @@ async function shot(page, name, opts = {}) {
   console.log('  ✔ ' + file);
 }
 
+/* kiểm tra không có phần tử nào tràn ngang khỏi màn hình (lỗi hay gặp trên điện thoại) */
+async function checkFit(page, where) {
+  const bad = await page.evaluate(() => {
+    const vw = document.documentElement.clientWidth;
+    const out = [];
+    if (document.documentElement.scrollWidth > vw + 1) out.push('trang rộng ' + document.documentElement.scrollWidth + 'px');
+    /* phần tử thò ra ngoài màn hình, trừ khi nằm trong vùng cuộn/cắt có chủ đích (bảng, thanh tab...) */
+    const clipped = (el) => {
+      for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+        const ox = getComputedStyle(p).overflowX;
+        if (ox !== 'visible' && p.getBoundingClientRect().right <= vw + 1) return true;
+      }
+      return false;
+    };
+    for (const el of document.querySelectorAll('.main *, .modal-root *, .share *')) {
+      if (el.closest('.sidebar')) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0 || r.right <= vw + 1) continue;
+      if (clipped(el)) continue;
+      out.push(el.tagName.toLowerCase() + ([...el.classList].length ? '.' + [...el.classList].join('.') : '') + ' (phải=' + Math.round(r.right) + 'px, "' + (el.textContent || '').trim().slice(0, 30) + '")');
+    }
+    return out.length ? 'khung nhìn ' + vw + 'px: ' + [...new Set(out)].slice(0, 5).join(', ') : '';
+  });
+  if (bad) errors.push('tràn ngang ở ' + where + ' - ' + bad);
+}
+
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 
@@ -181,20 +207,58 @@ async function shot(page, name, opts = {}) {
     await page.goto(BASE + '/');
     await page.waitForSelector('input[name=username]');
     await shot(page, 'mobile-login');
+    await checkFit(page, 'đăng nhập (điện thoại)');
     await login(page);
     await page.goto(BASE + '/#/tong-quan');
     await page.waitForSelector('.stat .val');
     await sleep(3000);
     await shot(page, 'mobile-dashboard');
+    await checkFit(page, 'tổng quan (điện thoại)');
     await page.goto(BASE + '/#/nguoi-dung');
     await page.waitForSelector('.client-cards .client-card');
     await shot(page, 'mobile-clients');
+    await checkFit(page, 'người dùng (điện thoại)');
     await page.click('.menu-btn');
     await shot(page, 'mobile-menu', { wait: 500 });
     await page.click('.backdrop-nav', { position: { x: 360, y: 300 } });
     await page.click('.client-cards .client-card .btn.soft');
     await page.waitForSelector('.modal .qr-box img');
     await shot(page, 'mobile-qr', { wait: 1200 });
+    await checkFit(page, 'mã QR (điện thoại)');
+    for (const k of ['stats', 'info', 'share', 'guide']) {
+      await page.click('.modal .tabs button[data-k=' + k + ']');
+      await sleep(500);
+      await checkFit(page, 'tab ' + k + ' (điện thoại)');
+    }
+    await page.keyboard.press('Escape');
+    await sleep(300);
+    await page.click('.topbar .btn.primary');
+    await page.waitForSelector('.modal input.input');
+    await sleep(400);
+    await checkFit(page, 'form thêm người dùng (điện thoại)');
+    await page.keyboard.press('Escape');
+    for (const r of ['thong-ke', 'nhat-ky', 'cai-dat', 'gioi-thieu']) {
+      await page.goto(BASE + '/#/' + r);
+      await sleep(900);
+      await checkFit(page, r + ' (điện thoại)');
+      if (r === 'cai-dat') {
+        for (const k of ['web', 'account', 'backup']) {
+          await page.click('.tabs button[data-k=' + k + ']');
+          await sleep(600);
+          await checkFit(page, 'cài đặt/' + k + ' (điện thoại)');
+        }
+      }
+    }
+    const tok = await page.evaluate(async () => {
+      const r = await fetch('/api/clients', { headers: { 'X-TWG': '1' } });
+      const c = (await r.json()).clients.find((x) => x.enabled);
+      const s = await fetch('/api/clients/' + c.id + '/share', { method: 'POST', headers: { 'X-TWG': '1', 'Content-Type': 'application/json' }, body: '{"hours":1}' });
+      return (await s.json()).token;
+    });
+    await page.goto(BASE + '/s/' + tok);
+    await page.waitForSelector('.qr-box img');
+    await sleep(500);
+    await checkFit(page, 'trang chia sẻ (điện thoại)');
     await ctx.close();
   }
 
