@@ -128,6 +128,18 @@ sleep 0.3
 api GET /api/clients | jq -e '[.clients[].name] | index("Thêm bằng CLI") != null' >/dev/null || fail "server chưa nạp lại dữ liệu CLI"
 ok "server tự nạp lại thay đổi từ CLI"
 
+echo "==> CLI: --help chỉ in hướng dẫn, không chạy lệnh thật"
+HD="$DATA/help-check"
+for c in "serve --help" "run -h" "uninstall --help" "passwd --help" "reset-2fa --help" "backup --help" "restore --help" "status --help"; do
+  # shellcheck disable=SC2086
+  out="$(cd "$DATA" && timeout 5 "$BIN" --data-dir "$HD" --no-wg $c 2>&1)" || fail "tuan-wg $c lỗi: $out"
+  grep -q "Cách dùng" <<<"$out" || fail "tuan-wg $c không in hướng dẫn: $out"
+done
+[ ! -e "$HD" ] && [ ! -e "$DATA/--help" ] || fail "--help đã thực thi lệnh"
+timeout 5 "$BIN" --data-dir "$HD" --no-wg serve --prot 1 >/dev/null 2>&1 && fail "serve chấp nhận tùy chọn gõ sai"
+timeout 5 "$BIN" --data-dir "$HD" --no-wg uninstall --purge --hepl >/dev/null 2>&1 && fail "uninstall chấp nhận tùy chọn gõ sai"
+ok "--help chỉ in hướng dẫn, tùy chọn gõ sai bị từ chối"
+
 echo "==> Đổi cổng web (tự khởi động lại tiến trình)"
 NEWPORT=18301
 api PUT /api/settings -d "{\"web_port\":$NEWPORT}" | jq -e '.restart_web == true' >/dev/null || fail "đổi cổng web"

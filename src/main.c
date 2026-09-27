@@ -79,15 +79,53 @@ static void usage(void)
     printf("Ví dụ: %ssudo tuan-wg install%s  rồi mở trình duyệt tới http://IP-máy-chủ:51821\n", C_BOLD, C_RESET);
 }
 
+/* "tuan-wg <lệnh> --help" chỉ in hướng dẫn, không bao giờ chạy lệnh thật */
+static const struct {
+    const char *cmd;
+    const char *text;
+} k_cmd_help[] = {
+    {"serve", "tuan-wg serve [--listen IP] [--port N]\n"
+              "  Chạy máy chủ web quản trị (dịch vụ tuan-wg.service gọi lệnh này).\n"
+              "  --listen, --port   ghi đè địa chỉ/cổng web trong cài đặt (mặc định 0.0.0.0:51821)\n"},
+    {"uninstall", "sudo tuan-wg uninstall [--purge] [-y]\n"
+                  "  Gỡ dịch vụ tự khởi động, giữ lại dữ liệu và WireGuard.\n"
+                  "  --purge   dừng WireGuard và xóa luôn dữ liệu (người dùng, thống kê)\n"
+                  "  -y        không hỏi lại\n"},
+    {"passwd", "sudo tuan-wg passwd [MẬT_KHẨU | --random]\n"
+               "  Đặt lại mật khẩu quản trị. Bỏ trống để nhập ẩn, --random để tạo ngẫu nhiên.\n"},
+    {"reset-2fa", "sudo tuan-wg reset-2fa\n"
+                  "  Tắt xác thực 2 lớp (2FA) khi mất điện thoại/ứng dụng xác thực.\n"},
+    {"status", "tuan-wg status\n"
+               "  Xem trạng thái dịch vụ web, WireGuard, số người dùng và địa chỉ truy cập.\n"},
+    {"backup", "sudo tuan-wg backup [FILE]\n"
+               "  Sao lưu người dùng, cài đặt và thống kê ra file JSON (không có FILE: in ra màn hình).\n"},
+    {"restore", "sudo tuan-wg restore FILE\n"
+                "  Khôi phục dữ liệu từ file sao lưu JSON (tạo bằng giao diện web hoặc lệnh backup).\n"},
+};
+
+static bool is_help_arg(const char *a)
+{
+    return !strcmp(a, "-h") || !strcmp(a, "--help") || !strcmp(a, "help");
+}
+
 static int cmd_serve(int argc, char **argv, char **orig_argv)
 {
     const char *o_listen = NULL;
     int o_port = 0;
     for (int i = 0; i < argc; i++) {
-        if (!strcmp(argv[i], "--listen") && i + 1 < argc)
+        if (!strcmp(argv[i], "--listen") && i + 1 < argc) {
             o_listen = argv[++i];
-        else if (!strcmp(argv[i], "--port") && i + 1 < argc)
+        } else if (!strcmp(argv[i], "--port") && i + 1 < argc) {
             o_port = atoi(argv[++i]);
+            if (o_port < 1 || o_port > 65535) {
+                fprintf(stderr, "Cổng không hợp lệ: %s\n", argv[i]);
+                return 2;
+            }
+        } else {
+            /* không tự chạy máy chủ với tùy chọn gõ nhầm */
+            fprintf(stderr, "Tùy chọn không hợp lệ: %s (xem: tuan-wg serve --help)\n", argv[i]);
+            return 2;
+        }
     }
     if (mkdir_p(g_app.data_dir, 0700) != 0) {
         LOGE("Không tạo được thư mục dữ liệu %s: %s", g_app.data_dir, strerror(errno));
@@ -223,6 +261,18 @@ int main(int argc, char **argv)
         g_log_level = LOG_WARN;
     int sub_argc = nrest > 0 ? nrest - 1 : 0;
     char **sub_argv = rest + 1;
+
+    const char *hcmd = !strcmp(cmd, "run") ? "serve" : !strcmp(cmd, "password") ? "passwd" : cmd;
+    for (size_t i = 0; i < sizeof k_cmd_help / sizeof k_cmd_help[0]; i++) {
+        if (strcmp(hcmd, k_cmd_help[i].cmd) != 0)
+            continue;
+        for (int j = 0; j < sub_argc; j++) {
+            if (is_help_arg(sub_argv[j])) {
+                printf("Cách dùng: %s", k_cmd_help[i].text);
+                return 0;
+            }
+        }
+    }
 
     if (!strcmp(cmd, "serve") || !strcmp(cmd, "run"))
         return cmd_serve(sub_argc, sub_argv, argv);

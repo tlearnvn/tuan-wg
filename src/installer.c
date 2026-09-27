@@ -724,10 +724,14 @@ int cmd_uninstall(int argc, char **argv)
 {
     bool purge = false, yes = false;
     for (int i = 0; i < argc; i++) {
-        if (!strcmp(argv[i], "--purge"))
+        if (!strcmp(argv[i], "--purge")) {
             purge = true;
-        else if (!strcmp(argv[i], "-y") || !strcmp(argv[i], "--yes"))
+        } else if (!strcmp(argv[i], "-y") || !strcmp(argv[i], "--yes")) {
             yes = true;
+        } else {
+            fprintf(stderr, "Tùy chọn không hợp lệ: %s (xem: tuan-wg uninstall --help)\n", argv[i]);
+            return 2;
+        }
     }
     if (!cli_is_root()) {
         fprintf(stderr, "Cần quyền root: sudo tuan-wg uninstall\n");
