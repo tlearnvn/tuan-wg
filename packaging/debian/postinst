@@ -19,7 +19,7 @@ configure)
             systemctl enable tuan-wg.service >/dev/null 2>&1 || true
             systemctl restart tuan-wg.service >/dev/null 2>&1 || true
         fi
-        echo "Tuấn WireGuard đã được cập nhật lên phiên bản $(/usr/bin/tuan-wg version | head -n1 | awk '{print $NF}')."
+        echo "Tuấn WireGuard đã được cập nhật lên phiên bản $(/usr/bin/tuan-wg version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)."
     fi
     ;;
 esac
