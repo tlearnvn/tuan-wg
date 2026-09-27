@@ -24,7 +24,7 @@ NODE_PATH=$(npm root -g) node scripts/screenshots.cjs http://127.0.0.1:18080 doc
 - `src/auth.c` - PBKDF2, phiên, chặn dò mật khẩu, TOTP; `src/crypto.c` - SHA-256/SHA-1/HMAC/X25519/Base64/Base32 tự viết
 - `src/qrcodegen.*` - thư viện QR của Nayuki (MIT, không sửa); `src/demo.c` - chế độ demo
 - `web/` - SPA JavaScript thuần (ES modules, không build step), được `tools/embed.c` nhúng vào binary
-- `packaging/` - unit systemd, script .deb/.tar.gz; `scripts/install.sh` - cài 1 lệnh từ GitHub Releases
+- `packaging/` - unit systemd, script .deb/.tar.gz; `scripts/install.sh` - cài 1 lệnh từ GitHub Releases (chưa có Release thì tự build từ mã nguồn)
 
 ## Quy ước
 

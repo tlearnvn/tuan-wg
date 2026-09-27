@@ -79,7 +79,7 @@ jobs:
             echo
             echo "### Cài đặt nhanh"
             echo '```bash'
-            echo "curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/scripts/install.sh | sudo bash"
+            echo "curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/HEAD/scripts/install.sh | sudo bash"
             echo '```'
           } >> notes.md
           cp "dist/tuan-wg_${V}_amd64.deb" dist/tuan-wg_amd64.deb

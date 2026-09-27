@@ -152,19 +152,20 @@ Máy chủ giải mã rồi chuyển tiếp ra Internet bằng IP của VPS (NAT
 ### 3.2. Cài bằng một lệnh
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/main/scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/HEAD/scripts/install.sh | sudo bash
 ```
 
 Script tải gói mới nhất từ [GitHub Releases](https://github.com/tlearnvn/tuan-wg/releases), cài đặt rồi chạy trình
-cài đặt ở chế độ tự động. Có thể tùy chỉnh bằng biến môi trường (đặt **sau** `sudo`):
+cài đặt ở chế độ tự động. **Chưa có bản phát hành** thì script tự cài công cụ build (`build-essential`, `git`, `musl-tools`),
+tải mã nguồn và build ngay trên máy chủ (khoảng 1 phút). Có thể tùy chỉnh bằng biến môi trường (đặt **sau** `sudo`):
 
 ```bash
 # Đặt sẵn tên miền cho máy chủ
-curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/main/scripts/install.sh \
+curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/HEAD/scripts/install.sh \
   | sudo TUAN_WG_ARGS="-y --endpoint vpn.tenmien.vn" bash
 
 # Cài đúng một phiên bản
-curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/main/scripts/install.sh \
+curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/HEAD/scripts/install.sh \
   | sudo TUAN_WG_VERSION=1.0.2 bash
 ```
 
@@ -172,10 +173,13 @@ curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/main/scripts/insta
 |---|---|
 | `TUAN_WG_VERSION` | Cài một phiên bản cụ thể, ví dụ `1.0.2` (mặc định: bản mới nhất) |
 | `TUAN_WG_ARGS` | Tham số truyền cho `tuan-wg install`, xem [tùy chọn](#37-các-tùy-chọn-của-tuan-wg-install) |
+| `TUAN_WG_SOURCE=1` | Luôn build từ mã nguồn thay vì tải gói dựng sẵn |
+| `TUAN_WG_GIT` | Kho mã nguồn dùng khi build (bản fork / mirror), mặc định `https://github.com/tlearnvn/tuan-wg.git` |
 
 > [!NOTE]
-> Cách này cần kho mã đã có bản phát hành trên GitHub Releases (được tạo tự động khi mã nguồn được đưa lên nhánh
-> `main`, xem [mục 19](#19-dành-cho-nhà-phát-triển)). Nếu bạn có sẵn file `.deb` / `.tar.gz`, dùng cách 2 hoặc 3.
+> Dùng đúng link **raw.githubusercontent.com** như trên. Link trang web dạng `github.com/.../blob/...` trả về trang HTML
+> nên `bash` báo lỗi `syntax error near unexpected token 'newline'`. Chữ `HEAD` trong link luôn trỏ tới nhánh mặc định của kho mã.
+> Bản phát hành trên GitHub Releases được tạo tự động khi mã nguồn được đưa lên nhánh `main` ([mục 19](#19-dành-cho-nhà-phát-triển)).
 
 ### 3.3. Cài bằng gói .deb
 
@@ -922,7 +926,7 @@ sudo tuan-wg backup /root/tuan-wg-backup.json
 scp /root/tuan-wg-backup.json root@IP-MÁY-MỚI:/root/
 
 # 2. Trên máy chủ mới: cài đặt rồi khôi phục
-curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/main/scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/HEAD/scripts/install.sh | sudo bash
 sudo tuan-wg restore /root/tuan-wg-backup.json
 sudo tuan-wg status
 ```
@@ -948,7 +952,7 @@ sudo tuan-wg status
 
 ```bash
 # Cách 1: chạy lại lệnh cài một dòng (tải bản mới nhất)
-curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/main/scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/HEAD/scripts/install.sh | sudo bash
 
 # Cách 2: cài đè gói .deb mới
 sudo apt install ./tuan-wg_1.0.3_amd64.deb

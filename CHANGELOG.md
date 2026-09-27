@@ -7,6 +7,11 @@ Phiên bản được **tự động tăng** và mục mới được **tự đ�
 
 ## [Chưa phát hành]
 
+## [1.0.3] - 2026-09-27
+
+### 🐛 Sửa lỗi
+- **install:** Lệnh cài một dòng tự build từ mã nguồn khi chưa có bản phát hành
+
 ## [1.0.2] - 2026-09-27
 
 ### 🐛 Sửa lỗi

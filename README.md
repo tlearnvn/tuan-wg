@@ -95,13 +95,16 @@ trong **một file thực thi tĩnh viết bằng C**, không cần Node.js, Pyt
 ### Cách 1 — Một lệnh (khuyên dùng)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/main/scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/HEAD/scripts/install.sh | sudo bash
 ```
 
-Tự tải bản mới nhất trên [GitHub Releases](https://github.com/tlearnvn/tuan-wg/releases), cài WireGuard + giao diện web + dịch vụ tự khởi động.
+Tự tải bản mới nhất trên [GitHub Releases](https://github.com/tlearnvn/tuan-wg/releases) (chưa có bản phát hành thì tự build từ mã nguồn),
+cài WireGuard + giao diện web + dịch vụ tự khởi động.
 Muốn đặt sẵn tên miền / cổng: `curl -fsSL …/install.sh | sudo TUAN_WG_ARGS="-y --endpoint vpn.tenmien.vn" bash`.
 
 ### Cách 2 — Gói `.deb` (Debian / Ubuntu)
+
+Tải từ [GitHub Releases](https://github.com/tlearnvn/tuan-wg/releases) (khi đã có bản phát hành) hoặc dùng file `.deb` bạn có sẵn:
 
 ```bash
 wget https://github.com/tlearnvn/tuan-wg/releases/latest/download/tuan-wg_amd64.deb
@@ -221,7 +224,7 @@ Chi tiết (Nginx, tường lửa, sơ đồ các cách truy cập): [Hướng d
 
 ```bash
 # Cập nhật lên bản mới nhất (giữ nguyên người dùng, cài đặt, thống kê)
-curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/main/scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/tlearnvn/tuan-wg/HEAD/scripts/install.sh | sudo bash
 
 # Gỡ bản .deb: remove giữ dữ liệu, purge xóa sạch
 sudo apt remove tuan-wg

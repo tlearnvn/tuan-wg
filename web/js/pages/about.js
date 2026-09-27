@@ -51,11 +51,15 @@ export function mount(el, ctx) {
     clear(upd);
     try {
       const r = await fetch('https://api.github.com/repos/' + repoPath + '/releases/latest', { headers: { Accept: 'application/vnd.github+json' } });
+      if (r.status === 404) {
+        upd.appendChild(h('div', { class: 'alert info' }, icon('info'), h('div', null, 'Chưa có bản phát hành nào trên GitHub - bạn đang dùng v' + info.version + '.')));
+        return;
+      }
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const rel = await r.json();
       if (cmpVer(rel.tag_name, info.version) > 0) {
         upd.appendChild(h('div', { class: 'alert ok' }, icon('sparkles'), h('div', null, h('b', null, 'Có phiên bản mới ' + rel.tag_name + '! '),
-          'Cập nhật bằng lệnh: ', h('code', null, 'curl -fsSL https://raw.githubusercontent.com/' + repoPath + '/main/scripts/install.sh | sudo bash'), ' - ',
+          'Cập nhật bằng lệnh: ', h('code', null, 'curl -fsSL https://raw.githubusercontent.com/' + repoPath + '/HEAD/scripts/install.sh | sudo bash'), ' - ',
           h('a', { href: rel.html_url, target: '_blank', rel: 'noopener' }, 'Xem chi tiết'))));
       } else {
         upd.appendChild(h('div', { class: 'alert ok' }, icon('check'), h('div', null, 'Bạn đang dùng phiên bản mới nhất (v' + info.version + ').')));
