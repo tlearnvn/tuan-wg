@@ -7,6 +7,13 @@ Phiên bản được **tự động tăng** và mục mới được **tự đ�
 
 ## [Chưa phát hành]
 
+## [1.0.2] - 2026-09-27
+
+### 🐛 Sửa lỗi
+- **deb:** Thông báo nâng cấp hiển thị đúng số phiên bản
+- **cli:** "tuan-wg <lệnh> --help" chỉ in hướng dẫn, không chạy lệnh thật
+- **web:** Giao diện điện thoại không còn bị tràn ngang màn hình
+
 ## [1.0.1] - 2026-09-27
 
 ### 🐛 Sửa lỗi
